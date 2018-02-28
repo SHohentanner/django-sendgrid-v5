@@ -13,7 +13,7 @@ from django.core.mail.backends.base import BaseEmailBackend
 
 import sendgrid
 from sendgrid.helpers.mail import (
-    Attachment, Category, Content, Email, Header, Mail, MailSettings, OpenTracking,
+    ASM, Attachment, Category, Content, Email, Header, Mail, MailSettings, OpenTracking,
     Personalization, SandBoxMode, Substitution, TrackingSettings
 )
 
@@ -31,6 +31,7 @@ class SendgridBackend(BaseEmailBackend):
     This class uses the api key set in the django setting, SENDGRID_API_KEY.  If you have not set this value (or wish
     to override it), this backend accepts an api_key argument that supersedes the django setting
     """
+
     def __init__(self, *args, **kwargs):
         super(SendgridBackend, self).__init__(*args, **kwargs)
 
@@ -116,6 +117,11 @@ class SendgridBackend(BaseEmailBackend):
             personalization.send_at = msg.send_at
 
         mail.add_personalization(personalization)
+
+        if hasattr(msg, "asm_group_id") and msg.asm_group_id:
+            if hasattr(msg, "asm_group_display") and msg.asm_group_display:
+                mail.asm = ASM(msg.asm_group_id, msg.asm_group_display)
+            mail.asm = ASM(msg.asm_group_id)
 
         if hasattr(msg, "reply_to") and msg.reply_to:
             if mail.reply_to:
